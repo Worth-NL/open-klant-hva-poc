@@ -1,4 +1,11 @@
 ==========
+DISCLAIMER
+==========
+
+Deze fork is bedoeld als werkopdracht voor studenten van de HvA Public lab om te kijken of de benodigdheden voor 
+een profielservice (deels) kunnen worden toegevoegd aan dit platform dat al in productie draait bij gemeentes.
+
+==========
 Open Klant
 ==========
 
