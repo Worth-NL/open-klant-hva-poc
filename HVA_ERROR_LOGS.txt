@@ -1,0 +1,204 @@
+Open Klant HVA Setup Error Log
+==============================
+
+Collected: 2026-09-29
+Project: /home/user/open-klant-hva-poc
+
+This file collects the blocking errors encountered while setting up the project.
+The output is grouped by component and includes the relevant error signatures,
+causes, and resolution status. Secret values have not been included.
+
+1. Python dependency installation: pygraphviz
+------------------------------------------------
+
+Command:
+    pip install -r requirements/dev.txt
+
+Error:
+    Building wheel for pygraphviz (pyproject.toml) ... error
+    fatal error: graphviz/cgraph.h: No such file or directory
+    compilation terminated.
+    error: command 'x86_64-linux-gnu-gcc' failed with exit code 1
+    ERROR: Could not build wheels for pygraphviz, which is required to install
+    pyproject.toml-based projects
+
+Cause:
+    The Graphviz native development headers were not installed. The Python
+    package needs graphviz/cgraph.h to compile its extension.
+
+Resolution:
+    sudo apt update
+    sudo apt install graphviz libgraphviz-dev
+    pip install -r requirements/dev.txt
+
+Status: Resolved.
+
+
+2. Frontend build: Windows npm used from WSL
+--------------------------------------------
+
+Command:
+    npm run build
+
+Error:
+    > openklant@2.18.1 build
+    > npm run bundle
+
+    '\\wsl.localhost\Ubuntu\home\user\open-klant-hva-poc'
+    CMD.EXE was started with the above path as the current directory.
+    UNC paths are not supported. Defaulting to Windows directory.
+    npm error code ENOENT
+    npm error syscall open
+    npm error path C:\Windows\package.json
+    npm error enoent Could not read package.json
+
+Cause:
+    WSL resolved npm to the Windows installation at:
+    /mnt/c/Program Files/nodejs/npm
+    No Linux node executable was available in the WSL environment.
+
+Resolution:
+    Install and use Linux Node.js 24 through nvm, as pinned by .nvmrc:
+
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+    source ~/.bashrc
+    nvm install 24
+    nvm use 24
+    npm ci
+    npm run build
+
+Status: Resolved by using Linux Node.js inside WSL.
+
+
+3. Django migration: PostgreSQL local socket unavailable
+----------------------------------------------------------
+
+Command:
+    python src/manage.py migrate
+
+Error:
+    django.db.utils.OperationalError: connection is bad: connection to server
+    on socket "/var/run/postgresql/.s.PGSQL.5432" failed:
+    No such file or directory
+    Is the server running locally and accepting connections on that socket?
+
+Cause:
+    Development settings used an empty DB_HOST, which makes PostgreSQL use the
+    local Unix socket. PostgreSQL was running in Docker rather than locally.
+
+Resolution:
+    The Docker database was published on port 5432 and .env was configured with:
+
+    DB_HOST="127.0.0.1"
+    DB_PORT="5432"
+    DB_USER="openklant"
+    DB_NAME="openklant"
+
+    The migration then completed with:
+    Running migrations:
+      No migrations to apply.
+
+Status: Resolved.
+
+
+4. Docker web-init: duplicate UUID during migration 0049
+-----------------------------------------------------------
+
+Command:
+    docker compose up -d
+
+Error:
+    service "web-init" didn't complete successfully: exit 1
+
+    psycopg.errors.UniqueViolation: could not create unique index
+    "klantinteracties_internetakenactorenthoughmodel_uuid_key"
+    DETAIL: Key (uuid)=(748cd831-fff0-4d08-9cbe-813a902558e0) is duplicated.
+
+    django.db.utils.IntegrityError: could not create unique index
+    "klantinteracties_internetakenactorenthoughmodel_uuid_key"
+    DETAIL: Key (uuid)=(748cd831-fff0-4d08-9cbe-813a902558e0) is duplicated.
+
+Cause:
+    The persisted development database was at migration 0048, while the pulled
+    Docker image contained migration 0049. That migration added unique UUID
+    fields to existing tables, and the add-field operation produced duplicate
+    values in the existing database.
+
+Resolution:
+    The three UUID columns were added with PostgreSQL-generated UUID values and
+    unique constraints. Migration 0049 was then marked as already applied:
+
+    docker compose run --rm --no-deps --entrypoint sh web -c \
+        "python /app/src/manage.py migrate klantinteracties 0049 --fake"
+
+    The database volume was preserved; it was not deleted or reset.
+
+Status: Resolved. Docker services became healthy afterward.
+
+
+5. Django development server: port already in use
+---------------------------------------------------
+
+Command:
+    python src/manage.py runserver
+
+Error:
+    System check identified no issues (0 silenced).
+    Error: That port is already in use.
+
+Cause:
+    The Docker web container was already listening on port 8000.
+
+Verification:
+    curl http://localhost:8000/
+    HTTP 200
+
+Resolution options:
+    Run the host-side development server on another port:
+
+    python src/manage.py runserver 8001
+
+    Or stop the Docker web service before using port 8000:
+
+    docker compose stop web
+    python src/manage.py runserver
+
+Status: Resolved; the setup guide now documents the port split.
+
+
+6. Non-blocking Django warning: cloud_events package marker
+-------------------------------------------------------------
+
+Warning:
+    ?: (maykin.W001) Directory
+    /home/user/open-klant-hva-poc/src/openklant/cloud_events does not contain
+    an __init__.py file cloud_events.
+    HINT: Consider adding this module to make sure tests are picked up
+
+Cause:
+    The cloud_events directory was not marked as a Python package.
+
+Resolution:
+    Added:
+    src/openklant/cloud_events/__init__.py
+
+Verification:
+    System check identified no issues (0 silenced).
+
+Status: Resolved.
+
+
+Final verification
+==================
+
+    docker compose ps
+    All required services healthy.
+
+    curl http://localhost:8000/
+    HTTP 200
+
+    python src/manage.py check
+    System check identified no issues (0 silenced).
+
+    python src/manage.py migrate
+    No migrations to apply.
