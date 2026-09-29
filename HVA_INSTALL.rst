@@ -69,15 +69,22 @@ Start Docker services
 Start PostgreSQL, Redis, the web application, and the background workers:
 
 .. code-block:: bash
-
-    docker compose up -d
-    docker compose ps
+    docker-compose up -d --no-build
+    docker-compose exec web src/manage.py loaddata klantinteracties contactgegevens
+    docker-compose exec web src/manage.py createsuperuser
 
 The application is available at http://localhost:8000/ and Flower is available
 at http://localhost:5555/.
 
 The ``web-init`` service applies migrations and runs the setup configuration.
 For a Docker-only command, migrations can also be run with:
+
+Other Options:
+
+.. code-block:: bash
+
+    docker compose up -d
+    docker compose ps
 
 .. code-block:: bash
 
