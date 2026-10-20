@@ -10,6 +10,9 @@
 __pycache__
 *~
 *.mo
+.claude
+
+# Curl api test files
 src/test_omgeving_api
 
 # Javascript libraries
