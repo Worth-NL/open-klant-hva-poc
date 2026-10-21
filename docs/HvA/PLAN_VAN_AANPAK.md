@@ -2,7 +2,7 @@
 
 **Doel in één zin:** een inwoner ziet zijn zaken en kiest per zaak via welk communicatiemiddel (e-mail, sms, Berichtenbox, brief) hij geïnformeerd wil worden; de keuzes zijn beperkt tot wat de gemeente voor dat soort zaak toestaat, en het OMC kan per zaak opvragen welk kanaal gebruikt moet worden.
 
-**Uitgangspunt:** we bouwen verder op OpenKlant (route C) als backend en leveren het inwonerscherm als **Next.js-frontend** (wens van de stakeholder) die met die backend communiceert. We gebruiken de MoZa Profielservice **niet**: geen koppeling en geen nabouw van hun API of architectuur. Alle voorkeuren, kanalen en adressen leven in OpenKlant, dat al `Partij` en `DigitaalAdres` heeft; de frontend bewaart zelf geen gegevens.
+**Uitgangspunt:** we bouwen verder op OpenKlant (route C) als backend en leveren het inwonerscherm als **Next.js-frontend** (wens van de stakeholder) die met die backend communiceert. Alle voorkeuren, kanalen en adressen leven in OpenKlant, dat al `Partij` en `DigitaalAdres` heeft; de frontend bewaart zelf geen gegevens.
 
 Dit plan vertaalt `docs/HvA/OPDRACHT.md` (WORTH × Public Lab) naar werk in deze repo. Het begint bij **het scherm voor de inwoner** en werkt van daaruit naar de data en de API. Spoor 1 (bouwen) staat centraal; spoor 2 (onderzoek & ontwerp) krijgt in [§7](#7-spoor-2-onderzoek--ontwerp) de aanknopingspunten.
 
