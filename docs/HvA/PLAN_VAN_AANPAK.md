@@ -33,9 +33,9 @@ Parkeervergunning    [ Sms ▼ ]       (toegestaan: e-mail, sms)
 
 Mijn contactgegevens                                                    [ + toevoegen ]
 ───────────────────────────────────────────────────────────────────────────────────────────
-E-mail   anna@example.nl        ✔ geverifieerd
-E-mail   anna.werk@example.nl   ✖ niet geverifieerd      [ verifieer ]
-Sms      06 12345678            ✔ geverifieerd
+E-mail   anna@example.nl          geverifieerd
+E-mail   anna.werk@example.nl     niet geverifieerd      [ verifieer ]
+Sms      06 12345678              geverifieerd
 Brief    Dorpsstraat 3, Amsterdam (uit mijn gegevens)
 
 [ Opslaan ]                       "Voor sms is een geverifieerd telefoonnummer nodig."
