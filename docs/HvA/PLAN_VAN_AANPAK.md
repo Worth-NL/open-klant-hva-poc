@@ -51,7 +51,7 @@ Toestanden die ontworpen moeten worden: geen zaken, Open Zaak niet bereikbaar, g
 Inwoner (browser)
    │  Next.js-pagina (HTML van de server; het formulier werkt ook zonder JavaScript)
    ▼
-Next.js-server  (com_voorkeur_portaal: de serverlaag. Hier, en nergens anders, staan de tokens)
+Next.js-server  (profiel_service: de serverlaag. Hier, en nergens anders, staan de tokens)
    │ ──► Open Zaak  (JWT):    welke zaken heeft deze burger?
    │ ──► OpenKlant  (Token):  toegestane kanalen per zaaktype, adressen, voorkeuren lezen en opslaan
    │ ──► NotifyNL-verificatie (fake tot Worth levert)
@@ -87,7 +87,7 @@ Gecontroleerd in de code (`src/openklant/components/klantinteracties/`):
 | Zaaktypen met toegestane kanalen, voorkeuren | **Nee** | Nieuw: modellen, admin en API (`zaaktypen`, `communicatievoorkeuren`) |
 | Eén globale voorkeur | Deels | `Partij.voorkeurs_digitaal_adres`, `is_standaard_adres`: geen vervanging, wel mogelijke terugval |
 | Beheerscherm gemeente | Deels | Django-admin (inlog, 2FA, OIDC) |
-| Inwonerpagina | **Nee** | Nieuw: Next.js-app in `com_voorkeur_portaal/`. De bestaande admin, Django-templates en webpack zijn er niet voor inwoners |
+| Inwonerpagina | **Nee** | Nieuw: Next.js-app in `profiel_service/`. De bestaande admin, Django-templates en webpack zijn er niet voor inwoners |
 | Burger vinden en adressen beheren via de API | Ja | `partijen` (filters `partijIdentificator__*`) en `digitaleadressen` (volledige CRUD; filters `verstrektDoorPartij__uuid`, `isGeverifieerd`; `verificatieDatum` is schrijfbaar) |
 | Toegang tot de API | Ja | `Authorization: Token <token>` (`TokenAuth`). Een token geeft toegang tot de **hele** API, zonder beperking per partij: de Next.js-server moet zelf afdwingen dat een inwoner alleen eigen gegevens ziet |
 
@@ -156,7 +156,7 @@ Leg vast wat bij `bron: "geen"` gebeurt (aanname: het OMC houdt dan zijn eigen v
 
 ### 4.4 Zaken ophalen uit Open Zaak
 
-Nieuwe module `com_voorkeur_portaal/lib/openzaak/` (TypeScript, alleen op de server, `import "server-only"`). Authenticatie is een ZGW-JWT (HS256, ondertekend met het client-id en het secret die je van de begeleider krijgt, bijvoorbeeld met de bibliotheek `jose`); die gegevens staan alleen in `.env.local`. De aanroepen hieronder zijn gecontroleerd tegen de OpenAPI-specs van de testomgeving (Zaken API 1.5.1, Catalogi API 1.3.1; downloadlinks in [bijlage A](#bijlage-a-api-specs-van-de-testomgeving)):
+Nieuwe module `profiel_service/lib/openzaak/` (TypeScript, alleen op de server, `import "server-only"`). Authenticatie is een ZGW-JWT (HS256, ondertekend met het client-id en het secret die je van de begeleider krijgt, bijvoorbeeld met de bibliotheek `jose`); die gegevens staan alleen in `.env.local`. De aanroepen hieronder zijn gecontroleerd tegen de OpenAPI-specs van de testomgeving (Zaken API 1.5.1, Catalogi API 1.3.1; downloadlinks in [bijlage A](#bijlage-a-api-specs-van-de-testomgeving)):
 
 - **Zaken van een burger:** `GET /zaken/api/v1/zaken?rol__betrokkeneIdentificatie__natuurlijkPersoon__inpBsn=<bsn>&expand=zaaktype,status.statustype&pageSize=100` met header `Accept-Crs: EPSG:4326` (de header staat in de spec en in `docs/HvA/NOTIFY_TESTOMGEVING_API.rst`). De JWT gaat mee als `Bearer`. Ook bruikbaar: `rol__omschrijvingGeneriek` (bijv. `initiator`, `belanghebbende`) om te bepalen welke zaken "van" de burger zijn (aanname: `initiator` en `belanghebbende`; machtigingen vallen buiten het prototype), en `startdatum`/`einddatum__isnull` om lopende zaken te tonen. Voor veel filters is er ook `POST /zaken/_zoek`.
 - **Geen N+1:** met `expand=zaaktype` komt het volledige zaaktype (met `identificatie` en `omschrijving`) mee onder `_expand.zaaktype`, en met `status.statustype` ook de huidige status. Eén call volstaat dus voor het hele scherm. Cache toch per zaaktype-URL, en verifieer de precieze nesting van `_expand` met een echt antwoord.
@@ -166,7 +166,7 @@ Nieuwe module `com_voorkeur_portaal/lib/openzaak/` (TypeScript, alleen op de ser
 
 ### 4.5 Frontend: Next.js met serverlaag
 
-De stakeholder wil een frontend in Next.js die met de backend communiceert. Dat vervangt het eerdere uitgangspunt van een Django-app met templates. De app staat in `com_voorkeur_portaal/` (repo-root) met een eigen `package.json`; de Node-versie volgt `.nvmrc` (24). Gebruik de actuele stabiele Next.js die `create-next-app` aanbiedt (App Router, TypeScript) en lees de documentatie van **die** versie: conventies verschillen per hoofdversie.
+De stakeholder wil een frontend in Next.js die met de backend communiceert. Dat vervangt het eerdere uitgangspunt van een Django-app met templates. De app staat in `profiel_service/` (repo-root) met een eigen `package.json`; de Node-versie volgt `.nvmrc` (24). Gebruik de actuele stabiele Next.js die `create-next-app` aanbiedt (App Router, TypeScript) en lees de documentatie van **die** versie: conventies verschillen per hoofdversie.
 
 - **Server-first.** Pagina's zijn Server Components die hun gegevens op de server ophalen; de browser krijgt HTML. Opslaan gaat via Server Actions in een gewoon `<form action={...}>`, zodat het formulier ook zonder JavaScript werkt (controleer dat met JavaScript uit). Gebruik `"use client"` alleen voor kleine interactieve stukken, zoals een `aria-live`-melding.
 - **Geheimen alleen op de server.** `OPENKLANT_API_TOKEN`, de Open Zaak-gegevens en `SESSION_SECRET` staan in `.env.local` (niet in git) en worden alleen gelezen in modules met `import "server-only"`. Geef nooit een variabele het voorvoegsel `NEXT_PUBLIC_`: Next.js neemt die op in de bundel die naar de browser gaat.
@@ -191,7 +191,7 @@ De UI wordt gerealiseerd vanuit het verkregen wireframe door gemeente Amsterdam.
 ### 5.1 Frontend: Next.js-app
 
 ```
-com_voorkeur_portaal/                              NIEUW  Next.js-app (App Router, TypeScript) naast src/, met eigen package.json
+profiel_service/                              NIEUW  Next.js-app (App Router, TypeScript) naast src/, met eigen package.json
 ├── package.json, package-lock.json, tsconfig.json, next.config.ts, eslint-configuratie   (maakt create-next-app)
 │                            scripts: dev, build, start, lint, test, types:openklant
 ├── .env.example             NIEUW  alleen variabelenamen, nooit waarden: OPENKLANT_BASE_URL, OPENKLANT_API_TOKEN,
@@ -252,17 +252,17 @@ docs/HvA/
 ├── onderzoek/{gebruikersonderzoek.md, privacy_avg.md, wireframes/}   NIEUW  (spoor 2)
 └── DEMO.md                                NIEUW  demoscript
 CHANGELOG.rst                              WIJZIG
-.github/workflows/portaal.yml              NIEUW  (optioneel) lint, test en build van com_voorkeur_portaal/ op Node 24; eigen bestand zodat `ci.yml` ongemoeid blijft
+.github/workflows/portaal.yml              NIEUW  (optioneel) lint, test en build van profiel_service/ op Node 24; eigen bestand zodat `ci.yml` ongemoeid blijft
 ```
 
 Er is bewust **geen** wijziging nodig in `conf/base.py`, `urls.py`, `pyproject.toml`, het `Dockerfile` of `docker/setup_configuration/data.yaml`: de frontend is geen Django-app en OpenKlant roept Open Zaak niet aan.
 
-Gecontroleerd tegen de repo (2026-10-21): alle genoemde bestaande bestanden en mappen bestaan (`models/validators.py`, `admin/__init__.py`, `api/urls.py`, `metrics.py`, `openapi.yaml`, `src/openklant/fixtures/`, `CHANGELOG.rst`, `.nvmrc`); `com_voorkeur_portaal/` bestaat nog niet.
+Gecontroleerd tegen de repo (2026-10-21): alle genoemde bestaande bestanden en mappen bestaan (`models/validators.py`, `admin/__init__.py`, `api/urls.py`, `metrics.py`, `openapi.yaml`, `src/openklant/fixtures/`, `CHANGELOG.rst`, `.nvmrc`); `profiel_service/` bestaat nog niet.
 
 Praktische regels voor deze indeling:
 
 - **Eén bestand per laag, genoemd naar het onderwerp (backend).** De drie nieuwe modellen horen bij elkaar en staan daarom samen in `communicatievoorkeuren.py` (models, factories, admin, serializers, filterset, viewsets, tests). Dat volgt het bestaande patroon: `actoren.py` bevat `Actor`, `Medewerker`, `GeautomatiseerdeActor` en `OrganisatorischeEenheid`. Maak dus niet per model een eigen bestand; splits pas als een bestand onoverzichtelijk wordt.
-- **De Next.js-app is een los project.** Eigen `package.json`, `package-lock.json` en `node_modules` in `com_voorkeur_portaal/`. De `package.json` in de repo-root is de webpack-build van de Django-admin en blijft ongemoeid; draai de frontend-opdrachten dus in de app-map (`cd com_voorkeur_portaal && npm run dev`). Controleer vóór je commit met `git check-ignore -v com_voorkeur_portaal/.env.local com_voorkeur_portaal/node_modules com_voorkeur_portaal/.next` dat geheimen en build-output genegeerd worden: `create-next-app` schrijft een eigen `.gitignore`, maar de `.gitignore` in de root kent voor geheimen alleen `/.env`.
+- **De Next.js-app is een los project.** Eigen `package.json`, `package-lock.json` en `node_modules` in `profiel_service/`. De `package.json` in de repo-root is de webpack-build van de Django-admin en blijft ongemoeid; draai de frontend-opdrachten dus in de app-map (`cd profiel_service && npm run dev`). Controleer vóór je commit met `git check-ignore -v profiel_service/.env.local profiel_service/node_modules profiel_service/.next` dat geheimen en build-output genegeerd worden: `create-next-app` schrijft een eigen `.gitignore`, maar de `.gitignore` in de root kent voor geheimen alleen `/.env`.
 - **Poorten en backend lokaal.** Next.js draait op `:3000`; OpenKlant draai je met `python src/manage.py runserver 8001`. De Docker-container op `:8000` is de gepubliceerde upstream-image en kent jullie nieuwe endpoints niet. `OPENKLANT_BASE_URL` wijst dus naar `http://localhost:8001/klantinteracties/api/v1`.
 - **Fixtures.** Laad de demofixture met een expliciet pad, zoals `bin/generate_demo_data.sh` ook doet: `python src/manage.py loaddata src/openklant/fixtures/portal_demo.json`.
 - **Geen notificaties** voor de nieuwe resources: ze krijgen geen `NotificationViewSetMixin` en dus ook geen wijziging in `kanalen.py` of `src/notificaties.md`. Een notificatie bij een gewijzigde voorkeur, zodat het OMC kan abonneren in plaats van bij elk bericht te vragen, is een latere uitbreiding.
@@ -271,13 +271,13 @@ Let op de migratienummering: lokaal is `0048_...` de laatste migratie; de `lates
 
 ## 6. Stappenplan: waar beginnen we
 
-We werken in kleine commits naar `dev` (gitmoji + issue-nummer, zie de skill-referentie `conventions.md`). Na elke stap: aan de backend-kant `python src/manage.py check` en de relevante tests, aan de frontend-kant (in `com_voorkeur_portaal/`) `npm run lint` en `npm test`. De volgorde zorgt dat we **vroeg iets kunnen laten zien**.
+We werken in kleine commits naar `dev` (gitmoji + issue-nummer, zie de skill-referentie `conventions.md`). Na elke stap: aan de backend-kant `python src/manage.py check` en de relevante tests, aan de frontend-kant (in `profiel_service/`) `npm run lint` en `npm test`. De volgorde zorgt dat we **vroeg iets kunnen laten zien**.
 
 **Stap 1 - Omgeving draaiend** (`docs/HvA/HVA_INSTALL.rst`). `docker compose up`, `.env`, `check`. Let op: `--no-build` draait de gepubliceerde image, niet jouw code; draai je wijzigingen via `python src/manage.py runserver 8001`.
 Of draai `docker compose up -d db` Als je dan een error krijgt over permissies: `docker compose exec db psql -U postgres -d openklant -c "ALTER DATABASE openklant OWNER TO openklant; GRANT ALL ON SCHEMA public TO openklant;`
 Voor de frontend heb je Node 24 nodig (`.nvmrc`); controleer met `node -v`.
 
-**Stap 2 - Next.js-project en statisch scherm (eerste demo-resultaat).** Maak vanuit de repo-root het project met `npx create-next-app@latest com_voorkeur_portaal` (TypeScript, App Router, ESLint; zonder `src/`-map, want de repo heeft al een `src/`). Haal de voorbeeldpagina weg en bouw `app/voorkeuren/page.tsx` met hardcoded nepdata (de drie zaken uit §1), opmaak met CSS Modules en alleen de zichtbare "TESTLOGIN"-banner in `app/layout.tsx` (`lang="nl"`). Controleer: `npm run dev` en open `http://localhost:3000/voorkeuren`, daarna `npm run lint` en `npm run build`, en `git check-ignore -v com_voorkeur_portaal/.env.local` (zie §5.2). Deze stap raakt Django niet en heeft geen database, geen OpenKlant en geen Open Zaak nodig. Toets het scherm meteen met spoor 2.
+**Stap 2 - Next.js-project en statisch scherm (eerste demo-resultaat).** Maak vanuit de repo-root het project met `npx create-next-app@latest profiel_service` (TypeScript, App Router, ESLint; zonder `src/`-map, want de repo heeft al een `src/`). Haal de voorbeeldpagina weg en bouw `app/voorkeuren/page.tsx` met hardcoded nepdata (de drie zaken uit §1), opmaak met CSS Modules en alleen de zichtbare "TESTLOGIN"-banner in `app/layout.tsx` (`lang="nl"`). Controleer: `npm run dev` en open `http://localhost:3000/voorkeuren`, daarna `npm run lint` en `npm run build`, en `git check-ignore -v profiel_service/.env.local` (zie §5.2). Deze stap raakt Django niet en heeft geen database, geen OpenKlant en geen Open Zaak nodig. Toets het scherm meteen met spoor 2.
 
 **Stap 3 - Gemeente-kant in OpenKlant: `Zaaktype` + `ZaaktypeKanaal`, admin en `zaaktypen`-API.** Maak `models/communicatievoorkeuren.py` met deze twee modellen, de migratie, de factories en de admin met inline. Een beheerder zet in de admin voor *kapvergunning* e-mail en Berichtenbox open. Voeg de alleen-lezen `zaaktypen`-API toe (serializer met `toegestane_kanalen`, filterset, viewset, router, test) en genereer `openapi.yaml` opnieuw. Maak hier ook de demofixture `src/openklant/fixtures/portal_demo.json` (zaaktypen, toegestane kanalen, testpartij Anna met adressen) en laad hem met `python src/manage.py loaddata src/openklant/fixtures/portal_demo.json`. Controleer met `curl` en een token (uit `.env`, niet in een bestand in git) dat `GET /zaaktypen` de kanalen teruggeeft.
 
@@ -323,7 +323,7 @@ Technisch:
 - [ ] Het scherm toont alleen de door de gemeente toegestane kanalen per soort zaak.
 - [ ] Het scherm werkt zonder JavaScript, met toetsenbord, en met duidelijke Nederlandse foutmeldingen.
 - [ ] Backend: `manage.py check` schoon (incl. `openklant.E001`), `ruff check src` en `ruff format src` schoon, `python src/manage.py test src` groen.
-- [ ] Frontend (in `com_voorkeur_portaal/`): `npm run lint`, `npm test` en `npm run build` slagen.
+- [ ] Frontend (in `profiel_service/`): `npm run lint`, `npm test` en `npm run build` slagen.
 - [ ] `openapi.yaml` opnieuw gegenereerd en `npm run types:openklant` opnieuw gedraaid; OMC-endpoint beschreven.
 - [ ] Geen tokens, echte BSN's of echte persoonsgegevens in code, fixtures, tests of commits. Geen enkele variabele met `NEXT_PUBLIC_` bevat een geheim, en in de netwerktab van de browser gaan alleen verzoeken naar de Next.js-server.
 - [ ] Mock-login is zichtbaar gemarkeerd en alleen actief met `MOCK_LOGIN=true` (nooit in productie).
@@ -340,7 +340,7 @@ Technisch:
 | **Open Zaak-koppeling** | Alleen gelezen (zaken, zaaktypen); we schrijven niets terug. Filters en `expand` zijn gecontroleerd in de spec, maar nog niet tegen een echt antwoord. |
 | **Nieuwe API = contractwijziging** | `KLANTINTERACTIES_API_VERSION` in `conf/api.py`, changelog; overleg wat past bij een fork. |
 | **Persoonsgegevens** | Alleen testdata; log UUID's, geen BSN, adressen of namen. |
-| **Upstream-merge** | De hele frontend staat in `com_voorkeur_portaal/` en raakt `src/` niet. In OpenKlant komen alleen nieuwe bestanden (`communicatievoorkeuren.py` per laag) en kleine aanpassingen in bestaande registratiebestanden (`__init__.py`, `api/urls.py`, `constants.py`, `validators.py`, `metrics.py`). |
+| **Upstream-merge** | De hele frontend staat in `profiel_service/` en raakt `src/` niet. In OpenKlant komen alleen nieuwe bestanden (`communicatievoorkeuren.py` per laag) en kleine aanpassingen in bestaande registratiebestanden (`__init__.py`, `api/urls.py`, `constants.py`, `validators.py`, `metrics.py`). |
 | **Eén token = de hele API** | `TokenAuth` kent geen rechten per partij. Een fout in de Next.js-server (bijvoorbeeld een `partijUuid` uit een formulierveld vertrouwen) toont of wijzigt gegevens van een andere inwoner. Leid de partij altijd af uit de sessie en schrijf een test die dit afdwingt. |
 | **Twee toolchains en een contract** | Python/Django én Node/Next.js, met `openapi.yaml` als enige koppeling. Als we vergeten na een API-wijziging het schema of de types te genereren, dan breekt het scherm pas bij gebruik. Zet daarom beide stappen in de checklist (§8) en overweeg een CI-controle die de gegenereerde bestanden vergelijkt. |
 | **Next.js-conventies veranderen per versie** | Request-API's, caching en de naam en plek van authenticatie-hooks verschillen tussen hoofdversies. Pin de versie in `package-lock.json` en volg de documentatie van die versie, niet een tutorial. |
