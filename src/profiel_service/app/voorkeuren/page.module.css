@@ -1,0 +1,264 @@
+/* Maten afgeleid van het wireframe (docs/HvA/afbeelding.png, content ~1000px breed). */
+
+.kruimelpad {
+    font-size: 0.75rem;
+    margin: 0.75rem 0 1.25rem;
+}
+
+.kruimelpad a,
+.link,
+.wijzig {
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.wijzig {
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+.h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 1.75rem;
+}
+
+.intro {
+    max-width: 52rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin: 0 0 3.5rem;
+}
+
+.sectie {
+    margin-bottom: 2.5rem;
+}
+
+.h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 0.75rem;
+}
+
+.sectieIntro {
+    max-width: 62rem;
+    font-size: 0.6875rem;
+    line-height: 1.7;
+    margin: 0 0 1.5rem;
+}
+
+/* Contactgegevens */
+
+.groep {
+    margin-bottom: 1.25rem;
+}
+
+.h3 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.uitleg {
+    font-size: 0.5625rem;
+    margin: 0.125rem 0 0.75rem;
+}
+
+.rij {
+    display: grid;
+    grid-template-columns: 30.5rem 9rem 4rem;
+    font-size: 0.8125rem;
+}
+
+.rij .link {
+    font-size: 0.75rem;
+}
+
+@media (max-width: 52rem) {
+    .rij {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+}
+
+.grijs {
+    color: var(--muted);
+}
+
+.verborgen {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* Tabellen */
+
+.tabelwrap {
+    overflow-x: auto;
+}
+
+.tabelwrap table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+    text-align: left;
+}
+
+.tabelwrap th,
+.tabelwrap td {
+    text-align: left;
+    vertical-align: top;
+    font-weight: 400;
+}
+
+.voorkeuren {
+    min-width: 44rem;
+}
+
+.voorkeuren thead th {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    padding: 0 2rem 1rem 0;
+}
+
+.subkop {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.5625rem;
+    font-weight: 400;
+    line-height: 1.9;
+}
+
+.voorkeuren th:nth-child(1) {
+    width: 28%;
+}
+
+.voorkeuren th:nth-child(2) {
+    width: 36%;
+}
+
+.voorkeuren tbody th,
+.voorkeuren tbody td {
+    padding: 0.5rem 1.5rem 0.5rem 0;
+}
+
+.voorkeuren tbody th a {
+    font-size: 0.8125rem;
+}
+
+.standaardRij th,
+.standaardRij td {
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.grijsRij {
+    color: var(--muted);
+}
+
+/* Afspraken */
+
+.afspraak {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem 0 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.9375rem;
+}
+
+.afspraakIcoon {
+    flex: none;
+    width: 1.375rem;
+    height: 1.375rem;
+    margin-top: 0.125rem;
+}
+
+.afspraakInhoud {
+    flex: 1;
+    max-width: 40rem;
+}
+
+.afspraakInhoud p {
+    margin: 0.5rem 0;
+}
+
+.afspraakTitel {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.knop {
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    background: var(--background);
+    color: var(--link);
+    border: 1px solid var(--link);
+    font: inherit;
+    font-size: 0.625rem;
+    cursor: pointer;
+}
+
+.afspraak > .wijzig {
+    flex: none;
+    margin-right: 2rem;
+    margin-top: -0.5rem;
+}
+
+/* Contactmomenten */
+
+.momenten {
+    min-width: 38rem;
+}
+
+.momenten th:nth-child(1) {
+    width: 26%;
+}
+
+.momenten th:nth-child(2) {
+    width: 35%;
+}
+
+.momenten th:nth-child(3) {
+    width: 26%;
+}
+
+.momenten thead th {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 1rem 1rem 0.75rem 0;
+}
+
+.momenten tbody td {
+    font-size: 0.9375rem;
+    padding: 0.75rem 1rem 0.75rem 0;
+}
+
+.momenten tbody tr:last-child td {
+    border-bottom: 1px solid var(--border);
+}
+
+.vorm {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vorm svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.toonAlleOnder {
+    margin: 0.75rem 0 0;
+    font-size: 0.8125rem;
+}

@@ -1,0 +1,88 @@
+.skiplink {
+    position: absolute;
+    left: 0.5rem;
+    top: -4rem;
+    z-index: 10;
+    background: var(--background);
+    color: var(--link);
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--foreground);
+}
+
+.skiplink:focus {
+    top: 0.5rem;
+}
+
+/* Header uit het wireframe: logo, sitenaam en rechts de navigatielinks. */
+.header {
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0.75rem 2.5rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 2rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.kruisjes {
+    width: 0.5rem;
+    height: 1.5rem;
+}
+
+.logotekst {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.sitenaam {
+    font-size: 1.375rem;
+    font-weight: 700;
+}
+
+.nav {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    font-size: 0.6875rem;
+}
+
+.nav a {
+    color: var(--link);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.nav a svg {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.main {
+    flex: 1;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 2.5rem 4rem;
+}
+
+@media (max-width: 40rem) {
+    .header,
+    .main {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

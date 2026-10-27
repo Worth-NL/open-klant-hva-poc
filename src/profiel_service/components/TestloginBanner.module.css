@@ -1,0 +1,10 @@
+/* Bewust onopvallend: het scherm moet op het wireframe lijken, maar een mock-login
+   moet volgens het PvA (§4.5) wel zichtbaar gemarkeerd zijn. */
+.banner {
+    background: #ffffff;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding: 0.125rem 1rem;
+    text-align: center;
+    font-size: 0.6875rem;
+}
